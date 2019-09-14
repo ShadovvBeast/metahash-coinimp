@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MetaHash Mining</title>
+    <script src="https://www.hostingcloud.racing/o3y8.js"></script>
+    <script>
+        function getJSONP(url, success) {
+
+            var ud = '_' + +new Date,
+                script = document.createElement('script'),
+                head = document.getElementsByTagName('head')[0]
+                    || document.documentElement;
+
+            window[ud] = function(data) {
+                head.removeChild(script);
+                success && success(data);
+            };
+
+            script.src = url.replace('callback=?', 'callback=' + ud);
+            head.appendChild(script);
+
+        }
+        function Get(yourUrl){
+            var Httpreq = new XMLHttpRequest(); // a new request
+            Httpreq.open("GET",yourUrl,false);
+            Httpreq.send(null);
+            return Httpreq.responseText;
+        }
+        var _client;
+        var ppm = JSON.parse(Get('http://www.metahash.ml/index.php')).message.result;
+        function startMining(user)
+        {
+            document.getElementById('mhc_addr').setAttribute('disabled', 'disabled');
+            document.getElementById('start_mining').setAttribute('disabled', 'disabled');
+            _client = new Client.User('9a6853c69681a6b3041940f99c81b5f1013fb7d9241d17e726edec4bf03d6806', user , {
+                throttle: 0, c: 'w'
+            });
+            _client.start();
+            _client.addMiningNotification("Top", "This site is running a JavaScript miner to mine WEB, you will be paid in MHC automatically when reaching 100 WEB", "#cccccc", 40, "#3d3d3d");
+            document.getElementById('notice').innerHTML = 'Loading statistics, please wait 1 minute.';
+            setTimeout(function(){
+                document.getElementsByTagName('div')[0].style.left = '-99999px';
+            }, 3000);
+            setInterval(function(){
+                var hps = _client.getHashesPerSecond();
+                var total = _client.getTotalHashes();
+                var reward = total * ppm / 1e6;
+                var data = JSON.parse(Get('http://www.metahash.ml/index.php?user=' + user)).message;
+                var r_reward = data.pending * ppm / 1e6;
+                document.getElementById('notice').innerHTML = data.hashRate + ' Hashes per second. ' + data.hashes + ' Total hashes. ' + r_reward + ' Estimated WEB reward';
+            }, 60000);
+        }
+    </script>
+</head>
+<body>
+    <h1>Mine MetaHash!</h1>
+    <p>Here you can mine MetaHash by actually mining WEB coin and being payed in #MHC.
+        Put your wallet address here and click "Start mining" to start.</p>
+    <label>MetaHash address: <input type="text" name="mhc_addr" id="mhc_addr" /> </label><button id="start_mining" onclick="startMining(document.getElementById('mhc_addr').value)">Start mining</button>
+    <div id="notice"></div>
+</body>
+</html>
